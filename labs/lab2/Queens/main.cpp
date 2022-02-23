@@ -19,19 +19,6 @@
 
 using Matrix = std::vector<std::pair<std::vector<int>, int>>;
 
-//void write(Matrix& matrix)
-//{
-//    for (auto indexWidth = 0; indexWidth < matrix.size(); indexWidth++)
-//    {
-//        for (auto indexHeight = 0; indexHeight < matrix.at(0).first.size(); indexHeight++)
-//        {
-//            std::cout << matrix.at(indexWidth).first.at(indexHeight);
-//        }
-//
-//        std::cout << std::endl;
-//    }
-//}
-
 void initFiles(std::ifstream& input, std::ofstream& output);
 void initMatrix(Matrix& matrix, int width);
 void checkQueensCapacity(Matrix& matrix, std::ostream& output);
@@ -53,8 +40,8 @@ int main()
 
         input >> numberOfQueens;
         initMatrix(matrix, numberOfQueens);
-        std::cout << matrix.size() << std::endl;
         checkQueensCapacity(matrix, output);
+
         if (!output.flush())
         {
             throw std::runtime_error("Error, can't flush output");
@@ -65,6 +52,7 @@ int main()
     catch (const std::exception& exception)
     {
         std::cout << exception.what() << std::endl;
+        return 1;
     }
 
     return 0;
@@ -90,20 +78,13 @@ void initFiles(std::ifstream& input, std::ofstream& output)
 
 void initMatrix(Matrix& matrix, int width)
 {
-    for (auto indexHeight = 0; indexHeight < width + 2; indexHeight++)
+    for (auto indexHeight = 0; indexHeight < width; indexHeight++)
     {
         matrix.push_back(std::pair<std::vector<int>, int>({}, indexHeight));
 
-        for (auto indexWidth = 0; indexWidth < width + 2; indexWidth++)
+        for (auto indexWidth = 0; indexWidth < width; indexWidth++)
         {
-            if (indexWidth == 0 || indexWidth == width + 1 || indexHeight == 0 || indexHeight == width + 1)
-            {
-                matrix.at(indexHeight).first.push_back(-2);
-            }
-            else
-            {
-                matrix.at(indexHeight).first.push_back(0);
-            }
+            matrix.at(indexHeight).first.push_back(0);
         }
     }
 }
@@ -111,22 +92,21 @@ void initMatrix(Matrix& matrix, int width)
 void checkQueensCapacity(Matrix& matrix, std::ostream& output)
 {
     int solutionsCount = 0;
-    addQueens(matrix, 1, output, solutionsCount);
+    addQueens(matrix, 0, output, solutionsCount);
+
     output << solutionsCount << " positions" << std::endl;
 }
 
 void addQueens(Matrix& matrix, int indexI, std::ostream& output, int& solutionsCount)
 {
-    for (auto indexJ = 1; indexJ < matrix.size() - 2; indexJ++)
+    for (auto indexJ = 0; indexJ < matrix.size(); indexJ++)
     {
         if (matrix.at(indexI).first.at(indexJ) == 0)
         {
             setQueen(matrix, indexI, indexJ);
 
-            if (indexJ != matrix.size() - 1)
+            if (indexI != matrix.size() - 1)
             {
-                std::cout << std::endl;
-                write(matrix);
                 addQueens(matrix, indexI + 1, output, solutionsCount);
             } else
             {
@@ -141,17 +121,17 @@ void addQueens(Matrix& matrix, int indexI, std::ostream& output, int& solutionsC
 
 void setQueen(Matrix& matrix, int indexIX, int indexJX)
 {
-    for (auto indexI = 1; indexI < matrix.size() - 2; indexI++)
+    for (auto indexI = 0; indexI < matrix.size(); indexI++)
     {
         matrix.at(indexI).first.at(indexJX)++;
         matrix.at(indexIX).first.at(indexI)++;
 
-        if (indexIX + indexJX - indexI >= 1 && indexIX + indexJX - indexI < matrix.size() - 1)
+        if (indexIX + indexJX - indexI >= 0 && indexIX + indexJX - indexI < matrix.size())
         {
             matrix.at(indexIX + indexJX - indexI).first.at(indexI)++;
         }
 
-        if (indexIX - indexJX + indexI >= 1 && indexIX - indexJX + indexI < matrix.size() - 1)
+        if (indexIX - indexJX + indexI >= 0 && indexIX - indexJX + indexI < matrix.size())
         {
             matrix.at(indexIX - indexJX + indexI).first.at(indexI)++;
         }
@@ -162,17 +142,17 @@ void setQueen(Matrix& matrix, int indexIX, int indexJX)
 
 void removeQueen(Matrix& matrix, int indexIX, int indexJX)
 {
-    for (auto indexI = 1; indexI < matrix.size() - 2; indexI++)
+    for (auto indexI = 0; indexI < matrix.size(); indexI++)
     {
         matrix.at(indexI).first.at(indexJX)--;
         matrix.at(indexIX).first.at(indexI)--;
 
-        if (indexIX + indexJX - indexI >= 1 && indexIX + indexJX - indexI < matrix.size() - 1)
+        if (indexIX + indexJX - indexI >= 0 && indexIX + indexJX - indexI < matrix.size())
         {
             matrix.at(indexIX + indexJX - indexI).first.at(indexI)--;
         }
 
-        if (indexIX - indexJX + indexI >= 1 && indexIX - indexJX + indexI < matrix.size() - 1)
+        if (indexIX - indexJX + indexI >= 0 && indexIX - indexJX + indexI < matrix.size())
         {
             matrix.at(indexIX - indexJX + indexI).first.at(indexI)--;
         }
@@ -183,13 +163,15 @@ void removeQueen(Matrix& matrix, int indexIX, int indexJX)
 
 void printQueensPosition(Matrix& matrix, std::ostream& output)
 {
-    for (auto indexI = 1; indexI < matrix.size() - 2; indexI++)
+    const std::vector<char> alphabet = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l'};
+
+    for (auto indexI = 0; indexI < matrix.size(); indexI++)
     {
-        for (auto indexJ = 1; indexJ < matrix.size() - 2; indexJ++)
+        for (auto indexJ = 0; indexJ < matrix.size(); indexJ++)
         {
-            if (matrix.at(indexI).first.at(indexJ) == -1)
+            if (matrix.at(indexJ).first.at(indexI) == -1)
             {
-                output << 'a' + (indexJ - 1) << indexI;
+                output << alphabet[indexI] << indexJ + 1;
 
                 if (indexI != matrix.size() - 1)
                 {
