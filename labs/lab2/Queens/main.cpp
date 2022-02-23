@@ -22,8 +22,8 @@ using Matrix = std::vector<std::pair<std::vector<int>, int>>;
 void initFiles(std::ifstream& input, std::ofstream& output);
 void initMatrix(Matrix& matrix, int width);
 void checkQueensCapacity(Matrix& matrix, std::ostream& output);
-void setQueen(Matrix& matrix, int indexIX, int indexJX);
-void removeQueen(Matrix& matrix, int indexIX, int indexJX);
+void setQueenToPosition(Matrix& matrix, int indexIX, int indexJX);
+void removeQueenFromPosition(Matrix& matrix, int indexIX, int indexJX);
 void printQueensPosition(Matrix& matrix, std::ostream& output);
 void addQueens(Matrix& matrix, int indexI, std::ostream& output, int& solutionsCount);
 
@@ -39,6 +39,10 @@ int main()
         initFiles(input, output);
 
         input >> numberOfQueens;
+        if (numberOfQueens < 2 || numberOfQueens > 13)
+        {
+            throw std::invalid_argument("Error, number of queens should be in range 2 .. 12");
+        }
         initMatrix(matrix, numberOfQueens);
         checkQueensCapacity(matrix, output);
 
@@ -103,7 +107,7 @@ void addQueens(Matrix& matrix, int indexI, std::ostream& output, int& solutionsC
     {
         if (matrix.at(indexI).first.at(indexJ) == 0)
         {
-            setQueen(matrix, indexI, indexJ);
+            setQueenToPosition(matrix, indexI, indexJ);
 
             if (indexI != matrix.size() - 1)
             {
@@ -114,12 +118,12 @@ void addQueens(Matrix& matrix, int indexI, std::ostream& output, int& solutionsC
                 printQueensPosition(matrix, output);
             }
 
-            removeQueen(matrix, indexI, indexJ);
+            removeQueenFromPosition(matrix, indexI, indexJ);
         }
     }
 }
 
-void setQueen(Matrix& matrix, int indexIX, int indexJX)
+void setQueenToPosition(Matrix& matrix, int indexIX, int indexJX)
 {
     for (auto indexI = 0; indexI < matrix.size(); indexI++)
     {
@@ -140,7 +144,7 @@ void setQueen(Matrix& matrix, int indexIX, int indexJX)
     matrix.at(indexIX).first.at(indexJX) = -1;
 }
 
-void removeQueen(Matrix& matrix, int indexIX, int indexJX)
+void removeQueenFromPosition(Matrix& matrix, int indexIX, int indexJX)
 {
     for (auto indexI = 0; indexI < matrix.size(); indexI++)
     {
