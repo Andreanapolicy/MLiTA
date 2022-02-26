@@ -17,21 +17,43 @@
 #include <iostream>
 #include <vector>
 
+const std::vector<char> ALPHABET = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l'};
+
+struct Position
+{
+    int y = 0;
+    int x = 0;
+};
+
+struct SolutionTree
+{
+    Position position = {};
+    int height = -1;
+    SolutionTree* parent = nullptr;
+    std::vector<SolutionTree*> sons;
+};
+
 using Matrix = std::vector<std::pair<std::vector<int>, int>>;
+using SolutionsQueue = std::vector<SolutionTree*>;
 
 void initFiles(std::ifstream& input, std::ofstream& output);
 void initMatrix(Matrix& matrix, int width);
 void checkQueensCapacity(Matrix& matrix, std::ostream& output);
 void setQueenToPosition(Matrix& matrix, int indexIX, int indexJX);
-void removeQueenFromPosition(Matrix& matrix, int indexIX, int indexJX);
-void printQueensPosition(Matrix& matrix, std::ostream& output);
-void addQueens(Matrix& matrix, int indexI, std::ostream& output, int& solutionsCount);
+void addQueens(Matrix& matrix, int indexHeight, SolutionTree* solutionTree, SolutionsQueue& solutionsToCheck);
+void checkPositions(Matrix& matrix, SolutionTree* solutionTree, SolutionsQueue& solutionsToCheck);
+void fillMatrixForCurrentSolution(Matrix& matrix, SolutionTree* solutionTree);
+void printAllSolutions(SolutionTree* solutionTree, int& countOfSolutions, int height, std::ostream& output);
+void printSolution(SolutionTree* solutionTree, std::ostream& output);
+void printPosition(Position& position, std::ostream& output);
+void check(Matrix& matrix, SolutionTree* solutionTree);
 
 int main()
 {
     std::ifstream input;
     std::ofstream output;
     Matrix matrix;
+    SolutionTree solutionTree;
 
     try
     {
@@ -39,7 +61,7 @@ int main()
         initFiles(input, output);
 
         input >> numberOfQueens;
-        if (numberOfQueens < 2 || numberOfQueens > 13)
+        if (numberOfQueens < 1 || numberOfQueens > 13)
         {
             throw std::invalid_argument("Error, number of queens should be in range 2 .. 12");
         }
@@ -95,31 +117,73 @@ void initMatrix(Matrix& matrix, int width)
 
 void checkQueensCapacity(Matrix& matrix, std::ostream& output)
 {
-    int solutionsCount = 0;
-    addQueens(matrix, 0, output, solutionsCount);
-
-    output << solutionsCount << " positions" << std::endl;
+    SolutionTree solutionTree;
+    int countOfSolutions = 0;
+    check(matrix, &solutionTree);
+    printAllSolutions(&solutionTree, countOfSolutions, (int) matrix.size() - 1, output);
+    output << countOfSolutions << " positions" << std::endl;
 }
 
-void addQueens(Matrix& matrix, int indexI, std::ostream& output, int& solutionsCount)
+void check(Matrix& matrix, SolutionTree* solutionTree)
 {
-    for (auto indexJ = 0; indexJ < matrix.size(); indexJ++)
+    SolutionsQueue solutionsToCheck;
+    solutionsToCheck.push_back(solutionTree);
+
+    while (!solutionsToCheck.empty())
     {
-        if (matrix.at(indexI).first.at(indexJ) == 0)
+        checkPositions(matrix, solutionsToCheck.at(0), solutionsToCheck);
+        solutionsToCheck.erase(solutionsToCheck.begin());
+    }
+}
+
+void checkPositions(Matrix& matrix, SolutionTree* solutionTree, SolutionsQueue& solutionsToCheck)
+{
+    if (solutionTree->height == -1)
+    {
+        addQueens(matrix, 0, solutionTree, solutionsToCheck);
+    }
+    else
+    {
+        addQueens(matrix, solutionTree->height + 1, solutionTree, solutionsToCheck);
+    }
+}
+
+void addQueens(Matrix& matrix, int indexHeight, SolutionTree* solutionTree, SolutionsQueue& solutionsToCheck)
+{
+    Matrix matrixForCurrentSolution = matrix;
+    fillMatrixForCurrentSolution(matrixForCurrentSolution, solutionTree);
+
+    for (auto indexWidth = 0; indexWidth < matrix.size(); indexWidth++)
+    {
+        if (matrixForCurrentSolution.at(indexHeight).first.at(indexWidth) == 0)
         {
-            setQueenToPosition(matrix, indexI, indexJ);
+            auto solution = new SolutionTree();
+            solution->position = {indexHeight, indexWidth};
+            solution->parent = solutionTree;
+            solution->height = indexHeight;
 
-            if (indexI != matrix.size() - 1)
+            solutionTree->sons.push_back(solution);
+            if (indexHeight != matrix.size() - 1)
             {
-                addQueens(matrix, indexI + 1, output, solutionsCount);
-            } else
-            {
-                solutionsCount++;
-                printQueensPosition(matrix, output);
+                solutionsToCheck.push_back(solution);
             }
-
-            removeQueenFromPosition(matrix, indexI, indexJ);
         }
+    }
+}
+
+void fillMatrixForCurrentSolution(Matrix& matrix, SolutionTree* solutionTree)
+{
+    if (solutionTree->parent == nullptr)
+    {
+        return;
+    }
+
+    auto solution = solutionTree;
+
+    while (solution != nullptr && solution->height != -1)
+    {
+        setQueenToPosition(matrix, solution->position.y, solution->position.x);
+        solution = solution->parent;
     }
 }
 
@@ -144,46 +208,42 @@ void setQueenToPosition(Matrix& matrix, int indexIX, int indexJX)
     matrix.at(indexIX).first.at(indexJX) = -1;
 }
 
-void removeQueenFromPosition(Matrix& matrix, int indexIX, int indexJX)
+void printAllSolutions(SolutionTree* solutionTree, int& countOfSolutions, int height, std::ostream& output)
 {
-    for (auto indexI = 0; indexI < matrix.size(); indexI++)
+    if (solutionTree == nullptr)
     {
-        matrix.at(indexI).first.at(indexJX)--;
-        matrix.at(indexIX).first.at(indexI)--;
-
-        if (indexIX + indexJX - indexI >= 0 && indexIX + indexJX - indexI < matrix.size())
-        {
-            matrix.at(indexIX + indexJX - indexI).first.at(indexI)--;
-        }
-
-        if (indexIX - indexJX + indexI >= 0 && indexIX - indexJX + indexI < matrix.size())
-        {
-            matrix.at(indexIX - indexJX + indexI).first.at(indexI)--;
-        }
+        return;
     }
 
-    matrix.at(indexIX).first.at(indexJX) = 0;
+    if (solutionTree->sons.empty() && solutionTree->height == height)
+    {
+        countOfSolutions++;
+        printSolution(solutionTree, output);
+        output << std::endl;
+    }
+    else
+    {
+        for (auto solution : solutionTree->sons)
+        {
+            printAllSolutions(solution, countOfSolutions, height, output);
+        }
+    }
 }
 
-void printQueensPosition(Matrix& matrix, std::ostream& output)
+void printSolution(SolutionTree* solutionTree, std::ostream& output)
 {
-    const std::vector<char> alphabet = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l'};
-
-    for (auto indexI = 0; indexI < matrix.size(); indexI++)
+    if (solutionTree->parent != nullptr)
     {
-        for (auto indexJ = 0; indexJ < matrix.size(); indexJ++)
-        {
-            if (matrix.at(indexJ).first.at(indexI) == -1)
-            {
-                output << alphabet[indexI] << indexJ + 1;
-
-                if (indexI != matrix.size() - 1)
-                {
-                    output << ' ';
-                }
-            }
-        }
+        printSolution(solutionTree->parent, output);
     }
 
-    output << std::endl;
+    if (solutionTree->height != -1)
+    {
+        printPosition(solutionTree->position, output);
+    }
+}
+
+void printPosition(Position& position, std::ostream& output)
+{
+    output << ALPHABET[position.y] << position.x + 1 << ' ';
 }
