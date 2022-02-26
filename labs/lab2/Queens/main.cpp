@@ -141,11 +141,10 @@ void checkPositions(Matrix& matrix, SolutionTree* solutionTree, SolutionsQueue& 
     if (solutionTree->height == -1)
     {
         addQueens(matrix, 0, solutionTree, solutionsToCheck);
+        return;
     }
-    else
-    {
-        addQueens(matrix, solutionTree->height + 1, solutionTree, solutionsToCheck);
-    }
+
+    addQueens(matrix, solutionTree->height + 1, solutionTree, solutionsToCheck);
 }
 
 void addQueens(Matrix& matrix, int indexHeight, SolutionTree* solutionTree, SolutionsQueue& solutionsToCheck)
