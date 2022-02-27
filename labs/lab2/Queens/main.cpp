@@ -53,7 +53,6 @@ int main()
     std::ifstream input;
     std::ofstream output;
     Matrix matrix;
-    SolutionTree solutionTree;
 
     try
     {
