@@ -61,7 +61,7 @@ int main()
     }
     catch (const std::exception& exception)
     {
-        std::cout << exception.what() << std::endl;
+        std::cout << "Message: " << exception.what() << std::endl;
         return 1;
     }
 
@@ -179,10 +179,6 @@ void setCellsUnderKnightBattle(Matrix& matrix, int height, int width)
 {
     const int matrixHeight = (int) matrix.size();
     const int matrixWidth = (int) matrix.at(0).first.size();
-    std::cout << height << " " << width << std::endl;
-    std::cout << (height - 1 > 0) << std::endl;
-    std::cout << (width - 2 > 0) << std::endl;
-    std::cout << (matrix.at(height - 1).first.at(width - 2) == 0) << std::endl;
     if (height - 1 >= 0 && width - 2 >= 0 && matrix.at(height - 1).first.at(width - 2) == 0)
     {
         matrix.at(height - 1).first.at(width - 2) = -1;
@@ -248,7 +244,7 @@ void setCellsUnderRookBattle(Matrix& matrix, int height, int width)
     const int matrixHeight = (int) matrix.size();
     const int matrixWidth = (int) matrix.at(0).first.size();
 
-    for (auto index = 0; index < matrixWidth; index++)
+    for (auto index = 0; index < matrixHeight; index++)
     {
         if (matrix.at(index).first.at(width) == 0)
         {
@@ -256,7 +252,7 @@ void setCellsUnderRookBattle(Matrix& matrix, int height, int width)
         }
     }
 
-    for (auto index = 0; index < matrixHeight; index++)
+    for (auto index = 0; index < matrixWidth; index++)
     {
         if (matrix.at(height).first.at(index) == 0)
         {
