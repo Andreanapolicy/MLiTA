@@ -15,8 +15,11 @@
 
 #include <fstream>
 #include <iostream>
+#include <map>
 
 void initFiles(std::ifstream& input, std::ofstream& output);
+long long getCountOfSolutions(int stepsToTarget, int stepsNumber);
+long long runSolutionsSearcher(int stepsToTarget, int stepsNumber, std::map<std::pair<int, int>, long long>& countedExpressions);
 
 int main()
 {
@@ -25,27 +28,17 @@ int main()
 
     try
     {
-        int targetDistance = 0;
+        int stepsToTarget = 0;
         int stepsNumber = 0;
         initFiles(input, output);
 
-        input >> targetDistance >> stepsNumber;
-        if (targetDistance < 0 || targetDistance > 50 || stepsNumber < 0 || stepsNumber > 50)
+        input >> stepsToTarget >> stepsNumber;
+        if (stepsToTarget < 0 || stepsToTarget > 50 || stepsNumber < 0 || stepsNumber > 50)
         {
             throw std::invalid_argument("Error, width and height should be in range 1 .. 50");
         }
 
-        if (targetDistance == stepsNumber)
-        {
-            output << "1" << std::endl;
-            return 0;
-        }
-
-        if (targetDistance > stepsNumber)
-        {
-            output << "0" << std::endl;
-            return 0;
-        }
+        output << getCountOfSolutions(stepsToTarget, stepsNumber);
 
         if (!output.flush())
         {
@@ -79,4 +72,57 @@ void initFiles(std::ifstream& input, std::ofstream& output)
     {
         throw std::invalid_argument("Error, can't open OUTPUT.TXT");
     }
+}
+
+long long getCountOfSolutions(int stepsToTarget, int stepsNumber)
+{
+    std::map<std::pair<int, int>, long long> countedExpressions; // {stepsToTarget, stepsNumber} : count
+
+    return runSolutionsSearcher(stepsToTarget, stepsNumber, countedExpressions);
+}
+
+long long runSolutionsSearcher(int stepsToTarget, int stepsNumber, std::map<std::pair<int, int>, long long>& countedExpressions)
+{
+    if ((stepsToTarget == 0 && stepsNumber != 0) || (stepsToTarget != 0 && stepsNumber == 0))
+    {
+        return 0;
+    }
+
+    if (stepsToTarget > stepsNumber)
+    {
+        return 0;
+    }
+
+    if (stepsToTarget == stepsNumber)
+    {
+        return 1;
+    }
+
+    long long countForBackStep = 0;
+    auto countedExpressionForBackStep = countedExpressions.find(std::pair<int, int>{stepsToTarget + 1, stepsNumber - 1});
+
+    if (countedExpressionForBackStep != countedExpressions.end())
+    {
+        countForBackStep = countedExpressionForBackStep->second;
+    }
+    else
+    {
+        countForBackStep = runSolutionsSearcher(stepsToTarget + 1, stepsNumber - 1, countedExpressions);
+        countedExpressions.emplace(std::pair<int, int>{stepsToTarget + 1, stepsNumber - 1}, countForBackStep);
+    }
+
+    long long countForForwardStep = 0;
+    auto countedExpressionForForwardStep = countedExpressions.find(std::pair<int, int>{stepsToTarget - 1, stepsNumber - 1});
+
+    if (countedExpressionForForwardStep != countedExpressions.end())
+    {
+        countForForwardStep = countedExpressionForForwardStep->second;
+    }
+    else
+    {
+        countForForwardStep = runSolutionsSearcher(stepsToTarget - 1, stepsNumber - 1, countedExpressions);
+        countedExpressions.emplace(std::pair<int, int>{stepsToTarget - 1, stepsNumber - 1}, countForForwardStep);
+    }
+
+    return countForBackStep + countForForwardStep;
 }
