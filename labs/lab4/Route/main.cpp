@@ -126,7 +126,7 @@ void countMaxRoute(Matrix& matrix, int stepsToTarget, std::ostream& output)
 
     queue.push(Point(0, 0));
 
-    for (auto index = 0; index < stepsToTarget; index++)
+    for (auto index = 0; index < stepsToTarget - 1; index++)
     {
         while (!queue.empty())
         {
@@ -182,18 +182,15 @@ void processPoint(Matrix& matrix, Matrix& current, Matrix& previous, std::queue<
 {
     if (current.at(point.first).first.at(point.second) == 0)
     {
-        if (current.at(point.first).first.at(point.second) == 0)
-        {
-            queue.push(std::pair<int, int>(point.first, point.second));
-        }
-
-        current.at(point.first).first.at(point.second) =
-                std::max(
-                        current.at(point.first).first.at(point.second),
-                        previous.at(originalPoint.first).first.at(originalPoint.second)
-                        + matrix.at(point.first).first.at(point.second)
-                );
+        queue.push(std::pair<int, int>(point.first, point.second));
     }
+
+    current.at(point.first).first.at(point.second) =
+            std::max(
+                    current.at(point.first).first.at(point.second),
+                    previous.at(originalPoint.first).first.at(originalPoint.second)
+                    + matrix.at(point.first).first.at(point.second)
+            );
 }
 
 void clearQueue(std::queue<Point>& queue)
