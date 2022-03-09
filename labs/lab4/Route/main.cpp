@@ -23,6 +23,7 @@
 
 using Matrix = std::vector<std::pair<std::vector<int>, int>>;
 using Point = std::pair<int, int>;
+using LoggedRecord = std::vector<Matrix>;
 
 void initFiles(std::ifstream& input, std::ofstream& output);
 void initMatrix(Matrix& matrix, int width);
@@ -30,6 +31,8 @@ void fillMatrix(Matrix& matrix, std::istream& input);
 void countMaxRoute(Matrix&matrix, int stepsToTarget, std::ostream& output);
 void processPoint(Matrix& matrix, Matrix& current, Matrix& previous, std::queue<Point>& queue, Point& originalPoint, Point& point);
 void clearQueue(std::queue<Point>& queue);
+std::vector<Point> getRoutes(const LoggedRecord& records, const Point& startPoint);
+void writeRoutes(std::ostream& output, const std::vector<Point>& records);
 
 int main()
 {
@@ -117,6 +120,12 @@ void fillMatrix(Matrix& matrix, std::istream& input)
 
 void countMaxRoute(Matrix& matrix, int stepsToTarget, std::ostream& output)
 {
+    LoggedRecord records;
+    Matrix firstStep;
+    initMatrix(firstStep, matrix.size());
+    firstStep.at(0).first.at(0) = 1;
+    records.push_back(firstStep);
+
     std::queue<Point> queue;
     std::queue<Point> nextQueue;
     Matrix current;
@@ -158,6 +167,7 @@ void countMaxRoute(Matrix& matrix, int stepsToTarget, std::ostream& output)
             }
         }
 
+        records.push_back(current);
         queue = nextQueue;
         clearQueue(nextQueue);
         previous = std::move(current);
@@ -166,16 +176,24 @@ void countMaxRoute(Matrix& matrix, int stepsToTarget, std::ostream& output)
     }
 
     int result = previous.at(0).first.at(0);
+    Point maxValue;
 
     for (auto indexI = 0; indexI < matrix.size(); indexI++)
     {
         for (auto indexJ = 0; indexJ < matrix.size(); indexJ++)
         {
-            result = std::max(result, previous.at(indexI).first.at(indexJ));
+            if (result < previous.at(indexI).first.at(indexJ))
+            {
+                result = previous.at(indexI).first.at(indexJ);
+                maxValue = {indexI, indexJ};
+            }
         }
     }
 
     output << result + matrix.at(0).first.at(0) << std::endl;
+
+    auto routes = getRoutes(records, maxValue);
+    writeRoutes(output, routes);
 }
 
 void processPoint(Matrix& matrix, Matrix& current, Matrix& previous, std::queue<Point>& queue, Point& originalPoint, Point& point)
@@ -198,5 +216,54 @@ void clearQueue(std::queue<Point>& queue)
     while (!queue.empty())
     {
         queue.pop();
+    }
+}
+
+std::vector<Point> getRoutes(const LoggedRecord& records, const Point& startPoint)
+{
+    Point point = startPoint;
+    std::vector<Point> points;
+    points.push_back(point);
+
+    for (int index = records.size() - 2; index >= 0; index--)
+    {
+        std::vector<Point> pointForFurtherMovement;
+
+        if (point.first - 1 >= 0)
+        {
+            pointForFurtherMovement.emplace_back(point.first - 1, point.second);
+        }
+
+        if (point.first + 1 < records[index].size() - 1)
+        {
+            pointForFurtherMovement.emplace_back(point.first + 1, point.second);
+        }
+
+        if (point.second + 1 < records[index].size() - 1)
+        {
+            pointForFurtherMovement.emplace_back(point.first, point.second + 1);
+        }
+
+        if (point.second - 1 >= 0)
+        {
+            pointForFurtherMovement.emplace_back(point.first, point.second - 1);
+        }
+
+        auto maxPointForMovement = std::max_element(pointForFurtherMovement.begin(), pointForFurtherMovement.end(),
+                         [&records, index](const Point& first, const Point& second)
+                         { return records[index].at(first.first).first.at(first.second) <= records[index].at(second.first).first.at(second.second); });
+
+        point = *maxPointForMovement;
+        points.push_back(point);
+    }
+
+    return points;
+}
+
+void writeRoutes(std::ostream& output, const std::vector<Point>& records)
+{
+    for (int index = records.size() - 1; index >= 0; index--)
+    {
+        output << records[index].first + 1 << ' ' << records[index].second + 1 << std::endl;
     }
 }
