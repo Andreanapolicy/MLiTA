@@ -32,7 +32,7 @@ int main()
         initFiles(input, output);
 
         input >> size >> difference;
-        if (size < 2 || size >= 1000000)
+        if (size < 2 || size > 1000000)
         {
             throw std::invalid_argument("Error, size should be in range 2 .. 1000000");
         }
