@@ -80,7 +80,7 @@ long long countDigitInRange(const std::string& firstLine, const std::string& sec
 
     if (firstNumberSize == secondNumberSize)
     {
-        return (secondNumber - firstNumber) * firstNumberSize;
+        return (secondNumber - firstNumber + 1) * firstNumberSize;
     }
 
     for (auto index = firstNumberSize; index <= secondNumberSize; index++)
