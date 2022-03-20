@@ -33,7 +33,7 @@ int main()
         int size;
         InitFiles(input, output);
         input >> size;
-        std::vector<int> brackets(size, 0);
+        std::vector<int> brackets(size * 2, 0);
         FillBrackets(input, brackets);
         output << countOfExternalBrackets(brackets) << std::endl;
         if (!output.flush())
@@ -92,5 +92,20 @@ void FillBrackets(std::istream& input, std::vector<int>& brackets)
 
 int countOfExternalBrackets(std::vector<int>& brackets)
 {
-    return 0;
+    std::vector<int> countOfRepeatedExternalBrackets(brackets.size() / 2, 0);
+
+    for (auto index = 0; index < brackets.size(); index++)
+    {
+        countOfRepeatedExternalBrackets[brackets[index]]++;
+    }
+
+    for (auto index = 0; index < countOfRepeatedExternalBrackets.size(); index++)
+    {
+        if (countOfRepeatedExternalBrackets[index] > 2)
+        {
+            return index;
+        }
+    }
+
+    return countOfRepeatedExternalBrackets.size();
 }
