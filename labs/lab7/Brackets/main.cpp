@@ -101,7 +101,7 @@ int countOfExternalBrackets(std::vector<int>& brackets)
 
     for (auto index = 0; index < countOfRepeatedExternalBrackets.size(); index++)
     {
-        if (countOfRepeatedExternalBrackets[index] > 2)
+        if (countOfRepeatedExternalBrackets[index] > 2 || (index == 0 && countOfRepeatedExternalBrackets[index] > 1))
         {
             return index;
         }
