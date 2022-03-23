@@ -14,6 +14,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <cmath>
 
 struct Point
 {
@@ -23,7 +24,7 @@ struct Point
 
 void InitFiles(std::ifstream& input, std::ofstream& output);
 std::string WhereIsDotRelativeTriangle(const Point& dot, const Point& firstVertex, const Point& secondVertex, const Point& thirdVertex);
-long GetTriangleArea(const Point& firstVertex, const Point& secondVertex, const Point& thirdVertex);
+double GetTriangleArea(const Point& firstVertex, const Point& secondVertex, const Point& thirdVertex);
 
 int main()
 {
@@ -80,10 +81,10 @@ void InitFiles(std::ifstream& input, std::ofstream& output)
 
 std::string WhereIsDotRelativeTriangle(const Point& dot, const Point& firstVertex, const Point& secondVertex, const Point& thirdVertex)
 {
-    long triangleArea = GetTriangleArea(firstVertex, secondVertex, thirdVertex);
-    long tempFirstTriangleArea = GetTriangleArea(dot, secondVertex, thirdVertex);
-    long tempSecondTriangleArea = GetTriangleArea(firstVertex, dot, thirdVertex);
-    long tempThirdTriangleArea = GetTriangleArea(firstVertex, secondVertex, dot);
+    double triangleArea = GetTriangleArea(firstVertex, secondVertex, thirdVertex);
+    double tempFirstTriangleArea = GetTriangleArea(dot, secondVertex, thirdVertex);
+    double tempSecondTriangleArea = GetTriangleArea(firstVertex, dot, thirdVertex);
+    double tempThirdTriangleArea = GetTriangleArea(firstVertex, secondVertex, dot);
 
     if (tempFirstTriangleArea + tempSecondTriangleArea + tempThirdTriangleArea <= triangleArea)
     {
@@ -93,9 +94,13 @@ std::string WhereIsDotRelativeTriangle(const Point& dot, const Point& firstVerte
     return "Out";
 }
 
-long GetTriangleArea(const Point& firstVertex, const Point& secondVertex, const Point& thirdVertex)
+double GetTriangleArea(const Point& firstVertex, const Point& secondVertex, const Point& thirdVertex)
 {
-    return std::abs(
-            (secondVertex.y - firstVertex.y) * (thirdVertex.x - firstVertex.x)
-            - (secondVertex.x - firstVertex.x) * (thirdVertex.y - firstVertex.y));
+    auto firstSide = sqrt(pow((secondVertex.x - firstVertex.x), 2) + pow((secondVertex.y - firstVertex.y), 2));
+    auto secondSide = sqrt(pow((thirdVertex.x - secondVertex.x), 2) + pow((thirdVertex.y - secondVertex.y), 2));
+    auto thirdSide = sqrt(pow((firstVertex.x - thirdVertex.x), 2) + pow((firstVertex.y - thirdVertex.y), 2));
+
+    auto p = (thirdSide + secondSide + firstSide) / 2;
+
+    return sqrt(p * (p - firstSide) * (p - secondSide) * (p - thirdSide));
 }
