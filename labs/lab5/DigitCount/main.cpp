@@ -89,16 +89,16 @@ long long countDigitInRange(const std::string& firstLine, const std::string& sec
         {
             if (index == firstNumberSize)
             {
-                result = (std::pow(10, index) - firstNumber) * index;
+                result = (long long)(std::pow(10, index) - firstNumber) * index;
             }
             else
             {
-                result += (std::pow(10, index) - std::pow(10, index - 1)) * index;
+                result = (long long)(std::pow(10, index) - std::pow(10, index - 1)) * index + (long long)result;
             }
         }
         else
         {
-            result += (secondNumber - std::pow(10, index - 1) + 1) * index;
+            result = (long long)(secondNumber - std::pow(10, index - 1) + 1) * index + (long long)result;
         }
     }
 
