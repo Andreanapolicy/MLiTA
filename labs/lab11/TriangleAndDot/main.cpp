@@ -24,7 +24,6 @@ struct Point
 
 void InitFiles(std::ifstream& input, std::ofstream& output);
 std::string WhereIsDotRelativeTriangle(const Point& dot, const Point& firstVertex, const Point& secondVertex, const Point& thirdVertex);
-double GetTriangleArea(const Point& firstVertex, const Point& secondVertex, const Point& thirdVertex);
 
 int main()
 {
@@ -81,26 +80,16 @@ void InitFiles(std::ifstream& input, std::ofstream& output)
 
 std::string WhereIsDotRelativeTriangle(const Point& dot, const Point& firstVertex, const Point& secondVertex, const Point& thirdVertex)
 {
-    double triangleArea = GetTriangleArea(firstVertex, secondVertex, thirdVertex);
-    double tempFirstTriangleArea = GetTriangleArea(dot, secondVertex, thirdVertex);
-    double tempSecondTriangleArea = GetTriangleArea(firstVertex, dot, thirdVertex);
-    double tempThirdTriangleArea = GetTriangleArea(firstVertex, secondVertex, dot);
+    signed long long firstExpression = static_cast<long long>(firstVertex.x - dot.x) * static_cast<long long>(secondVertex.y - firstVertex.y) - static_cast<long long>(secondVertex.x - firstVertex.x) * static_cast<long long>(firstVertex.y - dot.y);
+    signed long long secondExpression = static_cast<long long>(secondVertex.x - dot.x) * static_cast<long long>(thirdVertex.y - secondVertex.y) - static_cast<long long>(thirdVertex.x - secondVertex.x) * static_cast<long long>(secondVertex.y - dot.y);
+    signed long long thirdExpression = static_cast<long long>(thirdVertex.x - dot.x) * static_cast<long long>(firstVertex.y - thirdVertex.y) - static_cast<long long>(firstVertex.x - thirdVertex.x) * static_cast<long long>(thirdVertex.y - dot.y);
 
-    if (tempFirstTriangleArea + tempSecondTriangleArea + tempThirdTriangleArea <= triangleArea)
+    if (firstExpression == 0 || secondExpression == 0 || thirdExpression == 0
+        || (firstExpression < 0 && secondExpression < 0 && thirdExpression < 0)
+        || (firstExpression > 0 && secondExpression > 0 && thirdExpression > 0))
     {
         return "In";
     }
 
     return "Out";
-}
-
-double GetTriangleArea(const Point& firstVertex, const Point& secondVertex, const Point& thirdVertex)
-{
-    auto firstSide = sqrt(pow((secondVertex.x - firstVertex.x), 2) + pow((secondVertex.y - firstVertex.y), 2));
-    auto secondSide = sqrt(pow((thirdVertex.x - secondVertex.x), 2) + pow((thirdVertex.y - secondVertex.y), 2));
-    auto thirdSide = sqrt(pow((firstVertex.x - thirdVertex.x), 2) + pow((firstVertex.y - thirdVertex.y), 2));
-
-    auto p = (thirdSide + secondSide + firstSide) / 2;
-
-    return sqrt(p * (p - firstSide) * (p - secondSide) * (p - thirdSide));
 }
