@@ -25,6 +25,7 @@
 #include <cmath>
 
 constexpr long long MIN_STEP = 2;
+constexpr long long BORDERLINE_STEP = 1000000000;
 constexpr long long MAX_STEP = 1000000000000;
 
 void InitFiles(std::ifstream& input, std::ofstream& output);
@@ -91,7 +92,16 @@ void InitFiles(std::ifstream& input, std::ofstream& output)
 
 long long GetMinStepForWin(long long matchesCount)
 {
-    auto upperBound = static_cast<long long>(matchesCount / 2);
+    long long upperBound;
+    if (matchesCount >= BORDERLINE_STEP)
+    {
+        upperBound = static_cast<long long>(std::sqrt(matchesCount) + 1);
+    }
+    else
+    {
+        upperBound = static_cast<long long>(matchesCount / 2);
+    }
+
     for (long long index = 3; index <= upperBound; index++)
     {
         if (matchesCount % index == 0)
