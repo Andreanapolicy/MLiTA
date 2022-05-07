@@ -7,7 +7,7 @@
  * ===============================================================
  * Версия c++: 20
  * Компиляторы: gcc(9.3.0), g++(9.3.0)
- * ОС: Linux, Ubuntu 20.04
+ * ОС: Windows 10
  * Доподнительно: сборка происходила через gnu make(4.2.1)
  */
 
@@ -18,7 +18,7 @@
 void initFiles(std::ifstream& input, std::ofstream& output);
 void fillSequence(std::istream& input, std::vector<int>& sequence);
 int countPairWithDifference(const std::vector<int>& sequence, int difference);
-int getValue(int firstValue, int secondValue, int tempValue, const std::vector<int>& sequence);
+int binarySearch(const std::vector<int>& sequence, int lowerBound, int upperBound, int searchedValue);
 
 int main()
 {
@@ -63,7 +63,7 @@ int main()
 
 void initFiles(std::ifstream& input, std::ofstream& output)
 {
-    const std::string INPUT_FILE_NAME = "INPUT.TXT";
+    const std::string INPUT_FILE_NAME = "input5.txt";
     const std::string OUTPUT_FILE_NAME = "OUTPUT.txt";
 
     input.open(INPUT_FILE_NAME, std::ios_base::in);
@@ -94,31 +94,28 @@ int countPairWithDifference(const std::vector<int>& sequence, int difference)
 
     for (auto index = 0; index < sequence.size() - 1; index++)
     {
-        int tempValue = sequence[index] + difference;
+        int desiredValue = sequence[index] + difference;
 
-        if (tempValue > sequence[sequence.size() - 1])
+        if (desiredValue > sequence[sequence.size() - 1])
         {
             break;
         }
 
-        int identifiedValue = getValue(index + 1, sequence.size() - 1, tempValue, sequence);
-        if (identifiedValue == -1)
+        int desiredIndex = binarySearch(sequence, index + 1, sequence.size() - 1, desiredValue);
+        if (desiredIndex == -1)
         {
             continue;
         }
 
         counter++;
-        supportCounter = identifiedValue + 1;
-        while(supportCounter < sequence.size() && sequence[supportCounter] == tempValue)
+
+        for(supportCounter = desiredIndex + 1; supportCounter < sequence.size() && sequence[supportCounter] == desiredValue; supportCounter++)
         {
-            supportCounter++;
             counter++;
         }
 
-        supportCounter = identifiedValue - 1;
-        while(sequence[supportCounter] == tempValue)
+        for(supportCounter = desiredIndex - 1; supportCounter >= 0 && sequence[supportCounter] == desiredValue; supportCounter--)
         {
-            supportCounter--;
             counter++;
         }
     }
@@ -126,17 +123,27 @@ int countPairWithDifference(const std::vector<int>& sequence, int difference)
     return counter;
 }
 
-int getValue(int firstValue, int secondValue, int tempValue, const std::vector<int>& sequence)
+int binarySearch(const std::vector<int>& sequence, int lowerBound, int upperBound, int searchedValue)
 {
-    if (secondValue - firstValue < 2)
+    while (lowerBound <= upperBound)
     {
-        return sequence[firstValue] == tempValue ? firstValue : (sequence[secondValue] == tempValue ? secondValue : -1);
+        int index = (lowerBound + upperBound) / 2;
+
+        if (sequence[index] == searchedValue)
+        {
+            return index;
+        }
+
+        if (searchedValue > sequence[index])
+        {
+            lowerBound = index + 1;
+        }
+
+        if (searchedValue < sequence[index])
+        {
+            upperBound = index - 1;
+        }
     }
 
-    if (sequence[(secondValue + firstValue) / 2] > tempValue)
-    {
-        return getValue(firstValue, (secondValue + firstValue) / 2, tempValue, sequence);
-    }
-
-    return getValue((secondValue + firstValue) / 2, secondValue, tempValue, sequence);
+    return -1;
 }
